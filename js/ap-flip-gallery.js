@@ -85,8 +85,8 @@
 			this.flipping = false;
 
 			this._addWrapper();
-			this._initContainerAndImages();
-			this.updateHeadCss();
+			this._initTilesAndImages();
+			this._updateHeadCss();
 
 			this._trigger('init');
 
@@ -99,8 +99,10 @@
 		 *
 		 */
 		_addWrapper: function() {
-			this.$wrapper = $('<div></div>').addClass(cssPrefix + 'wrapper');
-			this.$wrapper.insertAfter(this.$target);
+			this.$wrapper = $('<div></div>')
+				.addClass(cssPrefix + 'wrapper')
+				.addClass(cssPrefix + 'clearfix')
+				.insertAfter(this.$target);
 
 			// Set unique ID
 			var id = (typeof this.settings.id == 'string' ? this.settings.id : cssPrefix + 'wrapper-' + globalCounter++);
@@ -110,7 +112,7 @@
 		/**
 		 *
 		 */
-		_initContainerAndImages: function() {
+		_initTilesAndImages: function() {
 			var self = this;
 
 			if (this.settings.randomImages) {
@@ -120,20 +122,27 @@
 			this.$tiles = $('<ul></ul>').addClass(cssPrefix + 'images');
 			this.$tiles.appendTo(this.$wrapper);
 
-			// Add only as many container and images as the users wants to see
+			// Add only as many tiles and images as the users wants to see
 			for (var index = 0; index < this.settings.tileCount; index++) {
 				// Only create as much tiles as much images we have
 				if (index == this.$images.length) {
 					break;
 				}
 
-				var $front = $('<div></div>').addClass(cssPrefix + 'front');
-				var $back = $('<div></div>').addClass(cssPrefix + 'back');
-
-				this._cloneImage(this.$images.eq(index)).appendTo($front);
-
-				var $tile = $('<li></li>').append($front).append($back);
+				var $tile = $('<li></li>');
+				var isCustomTile = (typeof this.settings.customTiles == 'object' && this.settings.customTiles.indexOf(index) > -1);
 				this.$tiles.append($tile);
+
+				if (isCustomTile) {
+					$tile.addClass(cssPrefix + 'custom');
+				}
+				else {
+					var $front = $('<div></div>').addClass(cssPrefix + 'front').appendTo($tile);
+					var $back = $('<div></div>').addClass(cssPrefix + 'back').appendTo($tile);
+
+					this._cloneImage(this.$images.eq(index)).appendTo($front);
+				}
+				this._trigger('initTile', [isCustomTile], $tile);
 			}
 
 			// ... the rest is cloned and stored for later use
@@ -163,7 +172,7 @@
 		 *
 		 */
 		_resetAvailableTiles: function() {
-			this.$availableTiles = this.$tiles.children();
+			this.$availableTiles = this.$tiles.children(':not(.' + cssPrefix +'custom)');
 			if (this.settings.randomDestination) {
 				this.$availableTiles.shuffle();
 			}
@@ -172,7 +181,7 @@
 		/**
 		 *
 		 */
-		updateHeadCss: function() {
+		_updateHeadCss: function() {
 			if (this.cssStyle) {
 				this.cssStyle.remove();
 			}
@@ -208,8 +217,8 @@
 			// Extract next image from hidden images
 			var $image = $(this.$hiddenImages.splice(0, 1));
 
-			// Select destination container and remove it from available container, so
-			// it is ensured that in one round every container is used
+			// Select destination tile and remove it from available ones, so
+			// it is ensured that in one round every tile is used
 			var $destinationTile = $(this.$availableTiles.splice(0, 1));
 
 			// Add image to the "back wrapper" and let CSS do the flip by setting flip class
@@ -217,7 +226,7 @@
 			$destinationTile.addClass(cssPrefix + 'flip');
 
 			var tileIndex = this.$tiles.children().index($destinationTile);
-			this._trigger('flip', [$destinationTile, tileIndex]);
+			this._trigger('flip', [tileIndex], $destinationTile);
 
 			// We have to do some things when flip animations ends
 			var self = this;
@@ -236,7 +245,7 @@
 				self.flipping = false;
 			}, this.settings.animationDuration + 100); // Why +100? Ensure that we modify everything AFTER animation finished
 
-			// If there are no containers left we use every available container in
+			// If there are no tiles left we use every available tile in
 			// the next round again
 			if (this.$availableTiles.length == 0) {
 				this._resetAvailableTiles();
@@ -246,11 +255,12 @@
 		/**
 		 *
 		 */
-		_trigger: function(eventType, args) {
+		_trigger: function(eventType, args, $target) {
 			var optionName = 'on' + eventType.ucfirst();
 			var f = this.settings[optionName];
 			if (typeof f == 'function') {
-				f.apply(this.$target, args);
+				var t = ($target ? $target : this.$target);
+				f.apply(t, args);
 			}
 			eventType = eventPrefix + eventType.ucfirst();
 			this.$target.trigger(eventType, args);
@@ -316,7 +326,8 @@
 					}
 					options = {};
 					options[key] = value;
-				} else {
+				}
+				else {
 					options = key;
 				}
 				this._setOptions(options);
@@ -383,6 +394,7 @@
 	ApFlipGallery.defaultSettings = {
 		id: undefined,
 		tileCount: undefined,
+		customTiles: [],
 
 		flipInterval: 5000,
 		animationDuration: 500,
@@ -393,6 +405,7 @@
 		randomImages: true,
 		randomDestination: true,
 
+		initTile: undefined,
 		click: undefined //TODO: Assign any click handler?
 	};
 

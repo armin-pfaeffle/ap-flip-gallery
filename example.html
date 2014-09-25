@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0;" />
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0;" />
 		<meta name="author" content="Armin Pfäffle" />
 		<meta name="robots" content="index, follow" />
 
@@ -32,20 +32,25 @@
 			</ul>
 		</div>
 
-		<input type="button" id="start" value="Start" />
-		<input type="button" id="stop" value="Stop" />
-		<input type="button" id="next" value="Next" />
 
 		<script type="text/javascript">
 
 			$('.images')
-				.on('apfgInit', function() { console.debug('init'); })
-				.on('apfgFlip', function(evt, $tile, index) { console.debug('flip'); console.debug($tile); console.debug(index); })
-				.on('apfgStart', function() { console.debug('start'); })
-				.on('apfgStop', function() { console.debug('stop'); })
 				.apFlipGallery({
-					tileCount: 3,
-					'onInit': function() { console.debug('onInit'); }
+					tileCount: 5,
+					customTiles: [0],
+					onInitTile: function(isCustomTile) {
+						if (isCustomTile) {
+							$(this).addClass('my-custom-tile');
+							$(this).html(
+								'<img src="images/purple-angels-logo.png" width="260" height="138" alt="Purple Angels" id="logo" />' +
+								'<p>This is a custom tile where you can add any content you want to! It will never flip, so this is a perfect place for a logo, text, or even controls for the gallery:</p>' +
+								'<input type="button" id="start" value="Start" />' +
+								'<input type="button" id="stop" value="Stop" />' +
+								'<input type="button" id="next" value="Next" />'
+							);
+						}
+					}
 				})
 				;
 

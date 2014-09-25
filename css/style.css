@@ -1,5 +1,8 @@
+@import url(http://fonts.googleapis.com/css?family=PT+Sans|Lora:400,400italic);
+
 body {
 	background-color: #eee;
+	font: 12pt 'PT Sans', Segoe UI, Calibri, sans-serif;
 	}
 
 .clearfix::after {
@@ -15,7 +18,8 @@ body {
 
 
 .gallery {
-	margin: 20px;
+	margin: 20px auto;
+	width: 960px;
 	}
 
 .apfg-wrapper > .apfg-images > li {
@@ -28,4 +32,23 @@ body {
 		box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
 		font-size: 0;
 		line-height: 0;
+		}
+
+#logo {
+	display: block;
+	margin: 20px auto;
+	}
+
+.my-custom-tile {
+	background-color: #333;
+	color: #fff;
+	padding: 20px;
+	box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+	width: 580px !important;
+	height: 353px !important;
+	}
+
+	.my-custom-tile p {
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		padding: 40px 0;
 		}
