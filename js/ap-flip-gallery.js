@@ -123,32 +123,29 @@
 			this.$tiles = $('<ul></ul>').addClass(cssPrefix + 'images');
 			this.$tiles.appendTo(this.$wrapper);
 
-			// Add only as many tiles and images as the users wants to see
-			for (var index = 0; index < this.settings.tileCount; index++) {
-				// Only create as much tiles as much images we have
-				if (index == this.$images.length) {
-					break;
-				}
-
+			// Add requested tiles
+			var imageIndex = 0;
+			for (var tileIndex = 0; tileIndex < this.settings.tileCount; tileIndex++) {
 				var $tile = $('<li></li>');
-				var isCustomTile = (typeof this.settings.customTiles == 'object' && this.settings.customTiles.indexOf(index) > -1);
 				this.$tiles.append($tile);
+				var isCustomTile = (typeof this.settings.customTiles == 'object' && this.settings.customTiles.indexOf(tileIndex) > -1);
 
-				if (isCustomTile) {
+				if (isCustomTile || imageIndex >= this.$images.length) {
 					$tile.addClass(cssPrefix + 'custom');
 				}
 				else {
 					var $front = $('<div></div>').addClass(cssPrefix + 'front').appendTo($tile);
 					var $back = $('<div></div>').addClass(cssPrefix + 'back').appendTo($tile);
 
-					this._cloneImage(this.$images.eq(index)).appendTo($front);
+					this._cloneImage(this.$images.eq(imageIndex)).appendTo($front);
+					imageIndex++;
 				}
 				this._trigger('initTile', [isCustomTile], $tile);
 			}
 
 			// ... the rest is cloned and stored for later use
 			this.$hiddenImages = $();
-			this.$images.slice(this.settings.tileCount).each(function() {
+			this.$images.slice(imageIndex).each(function() {
 				self.$hiddenImages = self.$hiddenImages.add( self._cloneImage($(this)) );
 			});
 
@@ -174,7 +171,7 @@
 		 */
 		_resetAvailableTiles: function() {
 			this.$availableTiles = this.$tiles.children(':not(.' + cssPrefix +'custom)');
-			if (this.settings.randomDestination) {
+			if (this.settings.randomDestinationTile) {
 				this.$availableTiles.shuffle();
 			}
 		},
@@ -246,8 +243,9 @@
 
 				// Put front image to hidden images and remove it from dom
 				var $hiddenImage = $destinationTile.find('.' + cssPrefix + 'front img:first').detach();
-				self.$hiddenImages = self.$hiddenImages.add($hiddenImage);
-				// $hiddenImage.remove();
+				if ($hiddenImage.data('remove') !== true) {
+					self.$hiddenImages = self.$hiddenImages.add($hiddenImage);
+				}
 
 				self.flipping = false;
 				self.flipCounter++;
@@ -320,6 +318,57 @@
 		/**
 		 *
 		 */
+		add: function(elements) {
+			var self = this;
+			$(elements).each(function() {
+				var $clone = self._cloneImage($(this));
+				self.$hiddenImages = self.$hiddenImages.add($clone);
+			});
+
+			if (this.settings.randomImages) {
+				this.$hiddenImages.shuffle();
+				this.flipCounter = 0;
+			}
+		},
+
+		/**
+		 *
+		 */
+		remove: function(elements) {
+			var self = this,
+				urls = [],
+				index;
+
+			// Prepare urls
+			if (typeof elements == 'string') {
+				urls.push(elements);
+			}
+			else {
+				$(elements).each(function() {
+					urls.push($(this).attr('src'));
+				});
+			}
+
+			var $images = this.$tiles.find(':not(.' + cssPrefix + 'custom) img').add(this.$hiddenImages);
+			$images.each(function() {
+				for (var i = 0; i < urls.length; i++) {
+					// If url of image matches any given url, remove it directly if it is NOT visible
+					// or mark is as "remove" so it is not added to the hiddenImages list
+					if ($(this).attr('src') == urls[i]) {
+						if ((index = self.$hiddenImages.index($(this))) > -1) {
+							self.$hiddenImages.splice(index, 1);
+						}
+						else {
+							$(this).data('remove', true);
+						}
+					}
+				}
+			});
+		},
+
+		/**
+		 *
+		 */
 		option: function(key, value) {
 			if (!key) {
 				// Return copy of current settings
@@ -363,8 +412,9 @@
 				else if (key == 'animationDuration') {
 					this._updateHeadCss();
 				}
-				// TODO
-
+				else if (key == 'randomDestinationTile') {
+					this._resetAvailableTiles();
+				}
 			}
 		},
 
@@ -419,7 +469,7 @@
 		autoStart: true,
 
 		randomImages: true,
-		randomDestination: true
+		randomDestinationTile: true
 	};
 
 }(jQuery));
