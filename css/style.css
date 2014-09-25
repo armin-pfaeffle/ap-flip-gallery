@@ -1,0 +1,31 @@
+body {
+	background-color: #eee;
+	}
+
+.clearfix::after {
+	content: "";
+	clear: both;
+	display: block;
+	height: 0;
+	visibility: hidden;
+	width: 0;
+	line-height: 0;
+	font-size: 0;
+	}
+
+
+.gallery {
+	margin: 20px;
+	}
+
+.apfg-wrapper > .apfg-images > li {
+	width: 300px;
+	height: 393px;
+	margin: 20px 20px 0 0;
+	}
+
+	.apfg-wrapper > .apfg-images > li > div {
+		box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+		font-size: 0;
+		line-height: 0;
+		}

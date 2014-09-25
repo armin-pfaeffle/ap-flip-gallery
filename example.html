@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0;" />
+		<meta name="author" content="Armin Pfäffle" />
+		<meta name="robots" content="index, follow" />
+
+		<title>ap-flip-gallery</title>
+		<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="css/ap-flip-gallery.css" type="text/css" media="screen" />
+
+		 <script src="js/jquery.min.js"></script>
+		 <script src="js/ap-flip-gallery.js"></script>
+		<!--[if lt IE 9]><script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	</head>
+
+	<body>
+		<div class="gallery">
+			<ul class="images clearfix">
+				<li><img src="images/pride-w'14-1.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-2.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-3.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-4.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-5.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-6.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-7.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-8.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-9.jpg" width="300" height="393" alt="dirndl" /></li>
+				<li><img src="images/pride-w'14-10.jpg" width="300" height="393" alt="dirndl" /></li>
+			</ul>
+		</div>
+
+		<input type="button" id="start" value="Start" />
+		<input type="button" id="stop" value="Stop" />
+		<input type="button" id="next" value="Next" />
+
+		<script type="text/javascript">
+
+			$('.images')
+				.on('apfgInit', function() { console.debug('init'); })
+				.on('apfgFlip', function(evt, $tile, index) { console.debug('flip'); console.debug($tile); console.debug(index); })
+				.on('apfgStart', function() { console.debug('start'); })
+				.on('apfgStop', function() { console.debug('stop'); })
+				.apFlipGallery({
+					tileCount: 3,
+					'onInit': function() { console.debug('onInit'); }
+				})
+				;
+
+			$('#start').on('click', function() {
+				$('.images').apFlipGallery('start');
+			});
+
+			$('#stop').on('click', function() {
+				$('.images').apFlipGallery('stop');
+			});
+
+			$('#next').on('click', function() {
+				$('.images').apFlipGallery('next');
+			});
+
+		</script>
+	</body>
+</html>
