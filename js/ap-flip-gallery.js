@@ -399,14 +399,9 @@
 		flipInterval: 5000,
 		animationDuration: 500,
 		autoStart: true,
-		// TODO: array with active and inactive tiles
-		// TODO: Callback for tile generation so user can fill content to different tiles
 
 		randomImages: true,
-		randomDestination: true,
-
-		initTile: undefined,
-		click: undefined //TODO: Assign any click handler?
+		randomDestination: true
 	};
 
 }(jQuery));
