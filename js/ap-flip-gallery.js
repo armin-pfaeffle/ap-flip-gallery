@@ -83,6 +83,7 @@
 
 			this.active = false;
 			this.flipping = false;
+			this.flipCounter = 0;
 
 			this._addWrapper();
 			this._initTilesAndImages();
@@ -207,6 +208,12 @@
 			if (this.$hiddenImages.length == 0) {
 				return;
 			}
+			else {
+				if (this.settings.randomImages && this.flipCounter == this.$hiddenImages.length) {
+					this.$hiddenImages.shuffle();
+					this.flipCounter = 0;
+				}
+			}
 
 			// Only allow one flip animation
 			if (this.flipping) {
@@ -243,6 +250,7 @@
 				// $hiddenImage.remove();
 
 				self.flipping = false;
+				self.flipCounter++;
 			}, this.settings.animationDuration + 100); // Why +100? Ensure that we modify everything AFTER animation finished
 
 			// If there are no tiles left we use every available tile in
@@ -342,11 +350,20 @@
 				var value = options[key];
 
 				// Disable/modify plugin before we apply new settings
+				// TODO
 
 				// Apply option
 				this.settings[key] = value;
 
 				// Disable/modify plugin before we apply new settings
+				if (key == 'flipInterval' && this.active) {
+					this.stop();
+					this.start();
+				}
+				else if (key == 'animationDuration') {
+					this._updateHeadCss();
+				}
+				// TODO
 
 			}
 		},
@@ -355,6 +372,7 @@
 		 *
 		 */
 		destroy: function() {
+			// TODO
 		}
 	};
 
