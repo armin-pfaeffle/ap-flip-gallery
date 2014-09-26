@@ -1,6 +1,6 @@
 /**
-* @license ap-flig-gallery.js v0.1
-* Updated: 23.09.2014
+* @license ap-flig-gallery.js v0.2
+* Updated: 26.09.2014
 * {DESCRIPTION}
 * Copyright (c) 2014 armin pfaeffle
 * Released under the MIT license
@@ -62,7 +62,7 @@
 		}
 
 		this.settings = $.extend({}, ApFlipGallery.defaultSettings, options);
-		this.$target = $(element).hide();
+		this.$target = $(element);
 		this.$images = this.$target.find('img');
 		this._init();
 
@@ -85,9 +85,13 @@
 			this.flipping = false;
 			this.flipCounter = 0;
 
+			// Store status of visiblity and hide element
+			this.$target.data('visible', this.$target.is(':visible')).hide();
+
 			this._addWrapper();
 			this._initTilesAndImages();
 			this._updateHeadCss();
+			this._setCssClasses();
 
 			this._trigger('init');
 
@@ -171,7 +175,7 @@
 		 */
 		_resetAvailableTiles: function() {
 			this.$availableTiles = this.$tiles.children(':not(.' + cssPrefix +'custom)');
-			if (this.settings.randomDestinationTile) {
+			if (this.settings.randomDestinationTiles) {
 				this.$availableTiles.shuffle();
 			}
 		},
@@ -180,12 +184,10 @@
 		 *
 		 */
 		_updateHeadCss: function() {
-			if (this.cssStyle) {
-				this.cssStyle.remove();
-			}
+			this._removeHeadCss();
 
 			var wrapperId = this.$wrapper.attr('id');
-			duration = (parseInt(this.settings.animationDuration) / 1000).toFixed(3) + 's';
+			var duration = (parseInt(this.settings.animationDuration) / 1000).toFixed(3) + 's';
 
 			this.cssStyle = $("<style type='text/css'>"
 				+ "#" + wrapperId + " > .apfg-images > li.apfg-flip > div {\n"
@@ -201,8 +203,50 @@
 		/**
 		 *
 		 */
+		_removeHeadCss: function() {
+			if (this.cssStyle) {
+				this.cssStyle.remove();
+			}
+		},
+
+		/**
+		 *
+		 */
+		_setCssClasses: function() {
+			if (this.active) {
+				this.$wrapper.addClass(cssPrefix + 'active');
+			}
+			else {
+				this.$wrapper.removeClass(cssPrefix + 'active');
+			}
+
+			if (!this.settings.enabled) {
+				this.$wrapper.addClass(cssPrefix + 'disabled');
+			}
+			else {
+				this.$wrapper.removeClass(cssPrefix + 'disabled');
+			}
+
+			if (!this.settings.randomImages) {
+				this.$wrapper.addClass(cssPrefix + 'random-images');
+			}
+			else {
+				this.$wrapper.removeClass(cssPrefix + 'random-images');
+			}
+
+			if (!this.settings.randomDestinationTiles) {
+				this.$wrapper.addClass(cssPrefix + 'random-destination-tiles');
+			}
+			else {
+				this.$wrapper.removeClass(cssPrefix + 'random-destination-tiles');
+			}
+		},
+
+		/**
+		 *
+		 */
 		_flipImage: function() {
-			if (this.$hiddenImages.length == 0) {
+			if (!this.settings.enabled ||this.$hiddenImages.length == 0) {
 				return;
 			}
 			else {
@@ -286,6 +330,7 @@
 			}, this.settings.flipInterval);
 			this.active = true;
 
+			this._setCssClasses();
 			this._trigger('start');
 		},
 
@@ -297,6 +342,7 @@
 				clearInterval(this.interval);
 				this.active = false;
 
+				this._setCssClasses();
 				this._trigger('stop');
 			}
 		},
@@ -318,11 +364,35 @@
 		/**
 		 *
 		 */
+		enable: function() {
+			this.settings.enabled = true;
+			this._setCssClasses();
+		},
+
+		/**
+		 *
+		 */
+		disable: function() {
+			this.settings.enabled = false;
+			this._setCssClasses();
+		},
+
+		/**
+		 *
+		 */
+		isDisabled: function() {
+			return (this.settings.enabled == false);
+		},
+
+		/**
+		 *
+		 */
 		add: function(elements) {
 			var self = this;
 			$(elements).each(function() {
 				var $clone = self._cloneImage($(this));
 				self.$hiddenImages = self.$hiddenImages.add($clone);
+				self._trigger('add', [$(this)]);
 			});
 
 			if (this.settings.randomImages) {
@@ -355,11 +425,14 @@
 					// If url of image matches any given url, remove it directly if it is NOT visible
 					// or mark is as "remove" so it is not added to the hiddenImages list
 					if ($(this).attr('src') == urls[i]) {
+						self._trigger('remove', [$(this)]);
 						if ((index = self.$hiddenImages.index($(this))) > -1) {
 							self.$hiddenImages.splice(index, 1);
 						}
 						else {
-							$(this).data('remove', true);
+							$(this)
+								.addClass(cssPrefix + 'removing')
+								.data('remove', true);
 						}
 					}
 				}
@@ -412,8 +485,12 @@
 				else if (key == 'animationDuration') {
 					this._updateHeadCss();
 				}
-				else if (key == 'randomDestinationTile') {
+				else if (key == 'randomDestinationTiles') {
 					this._resetAvailableTiles();
+				}
+
+				if (key == 'enabled' || key == 'randomImages' || key == 'randomDestinationTiles') {
+					this._setCssClasses();
 				}
 			}
 		},
@@ -422,7 +499,19 @@
 		 *
 		 */
 		destroy: function() {
-			// TODO
+			this._trigger('destroy');
+
+			if (this.active) {
+				this.stop();
+			}
+			this.$wrapper.remove();
+			this._removeHeadCss();
+
+			if (this.$target.data('visible')) {
+				this.$target.show();
+			}
+
+			this.$target.removeData(datakey, this);
 		}
 	};
 
@@ -467,9 +556,10 @@
 		flipInterval: 5000,
 		animationDuration: 500,
 		autoStart: true,
+		enabled: true,
 
 		randomImages: true,
-		randomDestinationTile: true
+		randomDestinationTiles: true
 	};
 
 }(jQuery));
