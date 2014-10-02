@@ -305,15 +305,15 @@
 		/**
 		 *
 		 */
-		_trigger: function(eventType, args, $target) {
-			var optionName = 'on' + eventType.ucfirst();
-			var f = this.settings[optionName];
+		_trigger: function(eventType, args, $context) {
+			var optionName = 'on' + eventType.ucfirst(),
+				f = this.settings[optionName];
+			$context = ($context ? $context : this.$target);
 			if (typeof f == 'function') {
-				var t = ($target ? $target : this.$target);
-				f.apply(t, args);
+				f.apply($context, args);
 			}
 			eventType = eventPrefix + eventType.ucfirst();
-			this.$target.trigger(eventType, args);
+			$context.trigger(eventType, args);
 		},
 
 		/**
