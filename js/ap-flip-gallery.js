@@ -1,6 +1,6 @@
 /**
-* @license ap-flig-gallery.js v0.2
-* Updated: 26.09.2014
+* @license ap-flig-gallery.js v0.3
+* Updated: 07.11.2014
 * {DESCRIPTION}
 * Copyright (c) 2014 armin pfaeffle
 * Released under the MIT license
@@ -189,13 +189,13 @@
 			var wrapperId = this.$wrapper.attr('id');
 			var duration = (parseInt(this.settings.animationDuration) / 1000).toFixed(3) + 's';
 
-			this.cssStyle = $("<style type='text/css'>"
-				+ "#" + wrapperId + " > .apfg-images > li.apfg-flip > div {\n"
-				+ "\t-webkit-transition: " + duration + ";\n"
-				+ "\t   -moz-transition: " + duration + ";\n"
-				+ "\t    -ms-transition: " + duration + ";\n"
-				+ "\t     -o-transition: " + duration + ";\n"
-				+ "\t        transition: " + duration + ";\n"
+			this.cssStyle = $("<style type='text/css'>\n"
+				+ "#" + wrapperId + " > ." + cssPrefix + "images > li." + cssPrefix + "flip > div {\n"
+				+ "\t-webkit-transition: -webkit-transform " + duration + ";\n"
+				+ "\t   -moz-transition:    -moz-transform " + duration + ";\n"
+				+ "\t    -ms-transition:     -ms-transform " + duration + ";\n"
+				+ "\t     -o-transition:      -o-transform " + duration + ";\n"
+				+ "\t        transition:         transform " + duration + ";\n"
 				+ "\t}\n"
 			+ "</style>").appendTo("head");
 		},
